@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Grammar 1 (a - an) - الدرس الناطق التفاعلي</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Comic Neue / Nunito for exact worksheet typography feel & Cairo for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Comic+Neue:wght@700&family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --worksheet-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #fff3e0 0%, #f3e5f5 50%, #e1f5fe 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        .worksheet-font {
+            font-family: 'Comic Neue', 'Nunito', 'Fredoka', sans-serif;
+            letter-spacing: 0.01em;
+        }
+
+        /* Worksheet Paper Frame */
+        .poster-frame {
+            background: #ffffff;
+            box-shadow: 0 20px 60px rgba(60, 40, 90, 0.18), 0 0 0 6px rgba(255, 255, 255, 0.95);
+        }
+
+        /* Dashed Columns matching the exact worksheet */
+        .dashed-col-left {
+            border: 3.5px dashed #3b6998;
+            border-radius: 42px;
+        }
+
+        .dashed-col-right {
+            border: 3.5px dashed #3d2c5e;
+            border-radius: 42px;
+        }
+
+        /* Sentence Row Interactive Styling */
+        .sentence-row {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 14px;
+            position: relative;
+        }
+
+        .sentence-row:hover {
+            background-color: rgba(243, 229, 245, 0.55);
+            transform: translateX(3px);
+        }
+
+        .sentence-row.active-reading {
+            background-color: #fff8e1;
+            box-shadow: 0 4px 14px rgba(255, 152, 0, 0.22), 0 0 0 2.5px #ff9800;
+            z-index: 20;
+        }
+
+        /* Sentence Row Interactive Styling - Static & Steady Highlight */
+        .sentence-row {
+            transition: background-color 0.15s ease;
+            border-radius: 14px;
+            position: relative;
+        }
+
+        .sentence-row:hover {
+            background-color: rgba(243, 229, 245, 0.45);
+        }
+
+        .sentence-row.active-reading {
+            background-color: #fff59d;
+            box-shadow: 0 0 0 2.5px #fbc02d;
+            z-index: 20;
+        }
+
+        /* Target Word Highlight when read (Fixed static highlight, NO scaling or jumping) */
+        .target-word-box {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+
+        .target-word-box.word-active {
+            background-color: #ffe082;
+            box-shadow: 0 0 0 2px #ffa000;
+        }
+
+        /* Interactive Blank (a / an) */
+        .blank-slot {
+            display: inline-flex;
+            align-items: baseline;
+            justify-content: center;
+            min-width: 58px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .blank-slot:hover .dots-text {
+            color: #e65100;
+        }
+
+        .article-answer {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            font-weight: 900;
+            pointer-events: none;
+            padding: 0 8px;
+            border-radius: 8px;
+            line-height: 1;
+            text-shadow: 0 1px 0 #ffffff, 0 -1px 0 #ffffff, 1px 0 0 #ffffff, -1px 0 0 #ffffff;
+        }
+
+        .article-answer.ans-an {
+            color: #d81b60;
+        }
+
+        .article-answer.ans-a {
+            color: #1565c0;
+        }
+
+        .blank-slot.show-answer .article-answer,
+        .show-all-answers .article-answer {
+            opacity: 1;
+            transform: translateX(-50%);
+        }
+
+        .blank-slot.word-active .article-answer {
+            background-color: #ffe082;
+            box-shadow: 0 0 0 2px #ffa000;
+            transform: translateX(-50%);
+        }
+
+        /* Floating Pointing Finger (100% Static on the word, NEVER sliding or bobbing) */
+        #reading-finger {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            transform: translate(-50%, 0);
+            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.32));
+        }
+
+        #reading-finger.visible {
+            opacity: 1;
+        }
+
+        #reading-finger.reading-active {
+            transform: translate(-50%, 0);
+        }
+
+        .finger-ripple {
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            width: 22px;
+            height: 22px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 3px solid #ff2e7e;
+            background: rgba(255, 230, 0, 0.45);
+            pointer-events: none;
+        }
+
+        /* 3D Title Letters (a - an) matching the poster sign */
+        .sign-3d-text {
+            font-family: 'Fredoka', 'Arial Rounded MT Bold', sans-serif;
+            color: #d7b8c4;
+            -webkit-text-stroke: 2.5px #4a353b;
+            text-shadow: 0 3px 0 #4a353b, 0 5px 8px rgba(0,0,0,0.18);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ff9800; border-radius: 99px; }
+    </style>
+</head>
+<body class="py-3 px-2 sm:px-4 md:px-6 flex flex-col items-center">
+
+    <!-- ==================== TOP INTERACTIVE CONTROL BAR ==================== -->
+    <div class="w-full max-w-[880px] mb-3 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-orange-200 p-3 flex flex-wrap items-center justify-between gap-2 z-40 sticky top-2">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <!-- Auto Play All -->
+            <button id="btn-auto-play" onclick="toggleAutoPlay()" class="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 shadow-md shadow-orange-200 transition active:scale-95 text-sm sm:text-base">
+                <i id="icon-auto-play" class="fa-solid fa-play"></i>
+                <span id="text-auto-play">قراءة الكل بالترتيب</span>
+            </button>
+
+            <!-- Reading Scope Toggle: Word Only vs Full Sentence -->
+            <button id="btn-read-mode" onclick="toggleReadScope()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-purple-900 bg-purple-100 hover:bg-purple-200 border border-purple-300 transition text-xs sm:text-sm" title="تغيير طريقة القراءة بين الكلمة فقط أو الجملة كاملة">
+                <i class="fa-solid fa-microphone-lines text-purple-600"></i>
+                <span id="read-mode-label">القراءة: الجملة كاملة</span>
+            </button>
+
+            <!-- Show/Hide (a - an) Answers (Shown by default) -->
+            <button id="btn-answers" onclick="toggleShowAllAnswers()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-700 border border-rose-600 shadow-sm transition text-xs sm:text-sm" title="إظهار أو إخفاء إجابات a / an في الفراغات">
+                <i class="fa-solid fa-check-double"></i>
+                <span id="answers-label">الإجابات معروضة (a / an)</span>
+            </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <!-- Educational Teacher Voice Selector -->
+            <div class="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5">
+                <i class="fa-solid fa-chalkboard-user text-amber-600 text-xs sm:text-sm"></i>
+                <select id="voice-select" onchange="handleVoiceChange(this.value)" class="bg-transparent font-bold text-amber-900 text-xs sm:text-sm focus:outline-none cursor-pointer max-w-[155px] sm:max-w-[190px]" title="اختر صوت المعلم التعليمي">
+                    <option value="auto">صوت المعلم التعليمي (تلقائي)</option>
+                </select>
+            </div>
+
+            <!-- Speed Toggle -->
+            <button id="btn-speed" onclick="cycleSpeechSpeed()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 border border-sky-200 transition text-xs sm:text-sm">
+                <i class="fa-solid fa-gauge-high text-sky-600"></i>
+                <span id="speed-label">السرعة: تعليمي واضح</span>
+            </button>
+
+            <!-- Repeat Toggle -->
+            <button id="btn-repeat" onclick="toggleRepeatWord()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-200 transition text-xs sm:text-sm">
+                <i class="fa-solid fa-repeat text-emerald-600"></i>
+                <span id="repeat-label">النطق: مرة واحدة</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN WORKSHEET REPLICA CONTAINER ==================== -->
+    <main id="poster-container" class="poster-frame show-all-answers w-full max-w-[880px] rounded-[24px] overflow-hidden relative flex flex-col justify-between pb-6">
+
+        <!-- 1. EXACT WORKSHEET HEADER (Orange Scallops, Puzzle Pieces, Top Grammar 1, Boy & Girl holding "a - an") -->
+        <header id="worksheet-header" class="relative w-full bg-white pt-1 pb-2 overflow-hidden select-none">
+            <!-- High-Resolution Vector Replica of the Top Header (Also auto-swaps with exact crop if image is loaded) -->
+            <div id="header-illustration-container" class="w-full">
+                <svg viewBox="0 0 880 250" class="w-full h-auto block">
+                    <defs>
+                        <linearGradient id="topOrangeGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#f9a825"/>
+                            <stop offset="35%" stop-color="#ff7043"/>
+                            <stop offset="100%" stop-color="#ff5722"/>
+                        </linearGradient>
+                        <filter id="softShadow" x="-10%" y="-10%" width="120%" height="125%">
+                            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.18"/>
+                        </filter>
+                    </defs>
+
+                    <!-- Top Orange Scalloped Border -->
+                    <rect x="0" y="0" width="880" height="32" fill="url(#topOrangeGrad)"/>
+                    <!-- White Scallop Circles cutting into the bottom of the orange bar -->
+                    <g fill="#ffffff">
+                        <circle cx="28" cy="40" r="24"/>
+                        <circle cx="76" cy="40" r="24"/>
+                        <circle cx="124" cy="40" r="24"/>
+                        <circle cx="172" cy="40" r="24"/>
+                        <circle cx="220" cy="40" r="24"/>
+                        <circle cx="268" cy="40" r="24"/>
+                        <circle cx="316" cy="40" r="24"/>
+                        <circle cx="364" cy="40" r="24"/>
+                        <circle cx="412" cy="40" r="24"/>
+                        <circle cx="460" cy="40" r="24"/>
+                        <circle cx="508" cy="40" r="24"/>
+                        <circle cx="556" cy="40" r="24"/>
+                        <circle cx="604" cy="40" r="24"/>
+                        <circle cx="652" cy="40" r="24"/>
+                        <circle cx="700" cy="40" r="24"/>
+                        <circle cx="748" cy="40" r="24"/>
+                        <circle cx="796" cy="40" r="24"/>
+                        <circle cx="844" cy="40" r="24"/>
+                    </g>
+
+                    <!-- Top-Left 3 Interlocking Puzzle Pieces (Blue, Yellow, Coral-Pink) -->
+                    <g filter="url(#softShadow)">
+                        <!-- Blue Puzzle Piece -->
+                        <g transform="translate(8, 12) rotate(-5)">
+                            <rect x="0" y="10" width="54" height="54" rx="6" fill="#5c8bc0" stroke="#395c85" stroke-width="1.5"/>
+                            <circle cx="27" cy="10" r="9" fill="#5c8bc0"/>
+                            <circle cx="54" cy="37" r="9" fill="#5c8bc0"/>
+                            <circle cx="27" cy="64" r="9" fill="#ffffff"/>
+                        </g>
+                        <!-- Yellow Puzzle Piece -->
+                        <g transform="translate(76, 8) rotate(8)">
+                            <rect x="0" y="10" width="54" height="54" rx="6" fill="#ffca28" stroke="#d49a00" stroke-width="1.5"/>
+                            <circle cx="0" cy="37" r="9" fill="#ffca28"/>
+                            <circle cx="27" cy="64" r="9" fill="#ffca28"/>
+                            <circle cx="27" cy="10" r="9" fill="#f9a825"/>
+                        </g>
+                        <!-- Pink/Coral Puzzle Piece -->
+                        <g transform="translate(154, 6) rotate(-4)">
+                            <rect x="0" y="10" width="54" height="54" rx="6" fill="#ff8a80" stroke="#c85a54" stroke-width="1.5"/>
+                            <circle cx="0" cy="37" r="9" fill="#ff8a80"/>
+                            <circle cx="27" cy="10" r="9" fill="#ff8a80"/>
+                            <circle cx="54" cy="37" r="9" fill="#ffffff"/>
+                        </g>
+                    </g>
+
+                    <!-- Top-Right "Top Grammar 1" Badge -->
+                    <g filter="url(#softShadow)" transform="translate(615, 10)">
+                        <rect x="0" y="0" width="246" height="44" rx="14" fill="#ffffff" stroke="#d0d7de" stroke-width="2"/>
+                        <text x="112" y="30" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="25" fill="#1f2937">Top Grammar</text>
+                        <text x="222" y="30" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="26" fill="#d32f2f">1</text>
+                    </g>
+
+                    <!-- Center Signboard: "a - an" -->
+                    <g filter="url(#softShadow)" transform="translate(255, 114)">
+                        <rect x="0" y="0" width="365" height="68" rx="14" fill="#ffffff" stroke="#37474f" stroke-width="2.5"/>
+                        <!-- "a" -->
+                        <text x="54" y="53" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="900" font-size="68" fill="#d7b8c4" stroke="#4a353b" stroke-width="3.5">a</text>
+                        <!-- "-" -->
+                        <rect x="118" y="27" width="60" height="16" rx="4" fill="#d7b8c4" stroke="#4a353b" stroke-width="3.2"/>
+                        <!-- "an" -->
+                        <text x="282" y="53" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="900" font-size="68" fill="#d7b8c4" stroke="#4a353b" stroke-width="3.5">an</text>
+                    </g>
+
+                    <!-- Left Cartoon Boy Holding the Sign -->
+                    <g transform="translate(105, 58)">
+                        <!-- Shadow under feet -->
+                        <ellipse cx="75" cy="184" rx="34" ry="6" fill="rgba(0,0,0,0.12)"/>
+                        <!-- Legs & Shoes -->
+                        <line x1="62" y1="142" x2="48" y2="176" stroke="#f5b895" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="92" y1="142" x2="102" y2="174" stroke="#f5b895" stroke-width="6" stroke-linecap="round"/>
+                        <ellipse cx="44" cy="178" rx="10" ry="5" fill="#e53935" stroke="#212121" stroke-width="1.5"/>
+                        <ellipse cx="106" cy="176" rx="10" ry="5" fill="#e53935" stroke="#212121" stroke-width="1.5"/>
+                        <!-- Left Arm & Right Arm holding sign -->
+                        <path d="M52,96 L22,124" stroke="#f5b895" stroke-width="6.5" stroke-linecap="round"/>
+                        <path d="M98,96 L146,92" stroke="#f5b895" stroke-width="6.5" stroke-linecap="round"/>
+                        <circle cx="148" cy="92" r="6" fill="#f5b895" stroke="#5d4037" stroke-width="1.5"/>
+                        <!-- Blue Shirt & Dark Shorts -->
+                        <path d="M50,86 L102,86 L98,128 L54,128 Z" fill="#2b57c6" stroke="#1a3680" stroke-width="2"/>
+                        <path d="M54,126 L98,126 L102,146 L80,146 L76,136 L72,146 L50,146 Z" fill="#1e293b"/>
+                        <!-- Head & Cute Spiky Dark-Brown Hair -->
+                        <ellipse cx="76" cy="54" rx="44" ry="34" fill="#f5b895" stroke="#8d5538" stroke-width="1.8"/>
+                        <path d="M28,54 C18,16 52,0 92,4 C122,4 136,20 124,48 C110,30 88,24 62,28 C44,30 34,42 28,54 Z" fill="#3e2723"/>
+                        <!-- Rosy Cheeks, Eyes & Happy Open Smile -->
+                        <circle cx="62" cy="50" r="3.2" fill="#1f130e"/>
+                        <circle cx="96" cy="48" r="3.2" fill="#1f130e"/>
+                        <ellipse cx="48" cy="58" rx="6" ry="3.5" fill="#ff8a80" opacity="0.6"/>
+                        <ellipse cx="106" cy="56" rx="6" ry="3.5" fill="#ff8a80" opacity="0.6"/>
+                        <path d="M64,62 Q80,64 92,60 C90,76 66,76 64,62 Z" fill="#ff7043"/>
+                    </g>
+
+                    <!-- Right Cartoon Girl Holding the Sign -->
+                    <g transform="translate(602, 52)">
+                        <!-- Shadow under feet -->
+                        <ellipse cx="76" cy="190" rx="32" ry="6" fill="rgba(0,0,0,0.12)"/>
+                        <!-- Legs & Blue Shoes -->
+                        <line x1="66" y1="146" x2="54" y2="184" stroke="#f5b895" stroke-width="5.5" stroke-linecap="round"/>
+                        <line x1="88" y1="146" x2="96" y2="180" stroke="#f5b895" stroke-width="5.5" stroke-linecap="round"/>
+                        <ellipse cx="50" cy="186" rx="9" ry="5" fill="#3949ab" stroke="#1a237e" stroke-width="1.5"/>
+                        <ellipse cx="100" cy="182" rx="9" ry="5" fill="#3949ab" stroke="#1a237e" stroke-width="1.5"/>
+                        <!-- Arms -->
+                        <path d="M54,102 L18,92" stroke="#f5b895" stroke-width="6" stroke-linecap="round"/>
+                        <circle cx="16" cy="92" r="5.5" fill="#f5b895" stroke="#5d4037" stroke-width="1.5"/>
+                        <path d="M94,102 L116,126" stroke="#f5b895" stroke-width="6" stroke-linecap="round"/>
+                        <!-- Pink Dress with Striped Hem -->
+                        <path d="M58,94 L92,94 L106,146 L44,146 Z" fill="#ec407a" stroke="#ad1457" stroke-width="2"/>
+                        <path d="M46,136 L104,136 L106,146 L44,146 Z" fill="#ad1457" opacity="0.45"/>
+                        <!-- Hair Bun on Top Right -->
+                        <circle cx="116" cy="24" r="22" fill="#212121"/>
+                        <path d="M96,26 Q112,12 128,32" stroke="#ec407a" stroke-width="6" stroke-linecap="round" fill="none"/>
+                        <!-- Head & Dark Hair Bangs -->
+                        <ellipse cx="68" cy="56" rx="44" ry="34" fill="#f5b895" stroke="#8d5538" stroke-width="1.8"/>
+                        <path d="M24,48 C28,14 88,10 112,38 C118,52 114,72 96,82 C104,64 98,46 68,42 C46,40 32,42 24,48 Z" fill="#212121"/>
+                        <!-- Eyes, Cheeks & Smile -->
+                        <circle cx="48" cy="54" r="3.2" fill="#1f130e"/>
+                        <circle cx="80" cy="58" r="3.2" fill="#1f130e"/>
+                        <ellipse cx="36" cy="60" rx="6" ry="3.5" fill="#ff8a80" opacity="0.6"/>
+                        <ellipse cx="90" cy="66" rx="6" ry="3.5" fill="#ff8a80" opacity="0.6"/>
+                        <path d="M50,66 Q66,70 76,66 C74,80 50,78 50,66 Z" fill="#ff7043"/>
+                    </g>
+                </svg>
+            </div>
+        </header>
+
+        <!-- 2. TWO DASHED COLUMNS WITH ALL 22 SENTENCES (EXACT MATCH TO POSTER) -->
+        <div class="relative px-3 sm:px-7 pt-1 pb-4 grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7" dir="ltr">
+
+            <!-- Subtle Center Watermark ("Top القمة") just like the original worksheet -->
+            <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.06] z-0">
+                <div class="w-72 h-72 rounded-full border-8 border-indigo-900 flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-graduation-cap text-7xl text-indigo-900 mb-2"></i>
+                    <span class="font-black text-6xl text-indigo-900 tracking-wider">Top</span>
+                    <span class="font-black text-4xl text-indigo-900">القمة</span>
+                </div>
+            </div>
+
+            <!-- LEFT COLUMN (Items 1 to 11) -->
+            <div id="left-column" class="dashed-col-left bg-white/85 relative z-10 py-5 px-3 sm:px-5 flex flex-col justify-between space-y-2.5">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- RIGHT COLUMN (Items 12 to 22) -->
+            <div id="right-column" class="dashed-col-right bg-white/85 relative z-10 py-5 px-3 sm:px-5 flex flex-col justify-between space-y-2.5">
+                <!-- Populated by JS -->
+            </div>
+
+        </div>
+
+        <!-- 3. WORKSHEET FOOTER WITH PAGE NUMBER 5 -->
+        <footer class="relative z-10 w-full px-6 pt-1 pb-2 flex items-center justify-center">
+            <div class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-orange-100 border-2 border-orange-400 shadow-sm">
+                <span class="worksheet-font text-2xl font-black text-slate-800 leading-none">5</span>
+            </div>
+        </footer>
+    </main>
+
+    <!-- ==================== THE STEADY POINTING FINGER (NO LETTER MOVEMENT) ==================== -->
+    <div id="reading-finger" aria-hidden="true">
+        <div class="finger-ripple"></div>
+        <!-- Clean 3D-Styled Pointing Hand SVG pointing UP directly under the whole English word -->
+        <svg width="58" height="72" viewBox="0 0 68 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="skinGrad" x1="15" y1="4" x2="52" y2="68" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#FFE0C2"/>
+                    <stop offset="55%" stop-color="#FFCBA4"/>
+                    <stop offset="100%" stop-color="#F2AC7E"/>
+                </linearGradient>
+                <linearGradient id="cuffGrad" x1="16" y1="62" x2="54" y2="82" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#FF5722"/>
+                    <stop offset="100%" stop-color="#D84315"/>
+                </linearGradient>
+            </defs>
+            <circle cx="30" cy="7" r="6" fill="#FFEB3B" opacity="0.85"/>
+            <path d="M23 36V12C23 7.58172 26.5817 4 31 4C35.4183 4 39 7.58172 39 12V34" fill="url(#skinGrad)" stroke="#8D4E2A" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M26.5 11.5C26.5 8.8 28.5 7 31 7C33.5 7 35.5 8.8 35.5 11.5V14.5C35.5 15.3 34.8 16 34 16H28C27.2 16 26.5 15.3 26.5 14.5V11.5Z" fill="#FFF3E8" stroke="#D79973" stroke-width="1.2"/>
+            <path d="M39 29C39 26.2 41.2 24 44 24C46.8 24 49 26.2 49 29V36C49 33.2 51.2 31 54 31C56.8 31 59 33.2 59 36V45C59 56.5 50.5 65 39 65H27C17.6 65 11 58.2 11 48.5V41C11 36.5 14.8 33 19.2 33C21.2 33 23 34.2 23 36" fill="url(#skinGrad)" stroke="#8D4E2A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 45C12 40.5 16 37 20.5 37H25C27.8 37 30 39.2 30 42C30 44.8 27.8 47 25 47H18" fill="url(#skinGrad)" stroke="#8D4E2A" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M39 29V41" stroke="#8D4E2A" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M49 33V43" stroke="#8D4E2A" stroke-width="2.4" stroke-linecap="round"/>
+            <rect x="17" y="62" width="36" height="17" rx="6" fill="url(#cuffGrad)" stroke="#BF360C" stroke-width="2.4"/>
+            <circle cx="25" cy="70.5" r="2.6" fill="#FFD54F"/>
+            <circle cx="45" cy="70.5" r="2.6" fill="#FFD54F"/>
+        </svg>
+    </div>
+
+    <!-- ==================== APPLICATION LOGIC ==================== -->
+    <script>
+        /**
+         * Complete dataset of all 22 sentences from "Top Grammar 1: a - an" (image_86ac58.jpg)
+         * Preserves exact punctuation, dots count, column placement, and purple first letter.
+         */
+        const WORKSHEET_ITEMS = [
+            // Left Column (1 - 11)
+            { id: 1,  col: 'left',  word: 'ant',      article: 'an', dots: '.......',   hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 2,  col: 'left',  word: 'kite',     article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 3,  col: 'left',  word: 'bow',      article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 4,  col: 'left',  word: 'cake',     article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 5,  col: 'left',  word: 'ball',     article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 6,  col: 'left',  word: 'apple',    article: 'an', dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 7,  col: 'left',  word: 'arm',      article: 'an', dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 8,  col: 'left',  word: 'book',     article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 9,  col: 'left',  word: 'table',    article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 10, col: 'left',  word: 'eraser',   article: 'an', dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 11, col: 'left',  word: 'ring',     article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+
+            // Right Column (12 - 22)
+            { id: 12, col: 'right', word: 'pot',      article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 13, col: 'right', word: 'iron',     article: 'an', dots: '.........', hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 14, col: 'right', word: 'lion',     article: 'a',  dots: '.........', hasSpaceBeforeDot: false, hasDot: true },
+            { id: 15, col: 'right', word: 'orange',   article: 'an', dots: '.....',     hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 16, col: 'right', word: 'axe',      article: 'an', dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 17, col: 'right', word: 'ray',      article: 'a',  dots: '........',  hasSpaceBeforeDot: true,  hasDot: true },
+            { id: 18, col: 'right', word: 'way',      article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 19, col: 'right', word: 'nose',     article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 20, col: 'right', word: 'toy',      article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 21, col: 'right', word: 'ruler',    article: 'a',  dots: '........',  hasSpaceBeforeDot: false, hasDot: true },
+            { id: 22, col: 'right', word: 'umbrella', article: 'an', dots: '.....',     hasSpaceBeforeDot: false, hasDot: false }
+        ];
+
+        // ==================== STATE MANAGEMENT ====================
+        let activeRowId = null;
+        let currentFingerTargetEl = null;
+        let isAutoPlaying = false;
+        let autoPlayTimeout = null;
+        let stepTimers = [];
+        let readFullSentence = true; // true = reads full sentence with natural educational flow, false = reads target word only
+        let showAllAnswers = true;   // Answers (a / an) are placed and visible by default
+
+        let speechRates = [
+            { value: 0.84, label: "السرعة: تعليمي واضح" },
+            { value: 0.68, label: "السرعة: بطيء للتأسيس" },
+            { value: 0.98, label: "السرعة: طبيعي" }
+        ];
+        let currentSpeedIdx = 0;
+        let repeatTwice = false;
+
+        // ==================== RENDER WORKSHEET SENTENCES ====================
+        function renderWorksheet() {
+            const leftCol = document.getElementById('left-column');
+            const rightCol = document.getElementById('right-column');
+            leftCol.innerHTML = '';
+            rightCol.innerHTML = '';
+
+            WORKSHEET_ITEMS.forEach(item => {
+                const firstLetter = item.word.charAt(0);
+                const restOfWord = item.word.slice(1);
+                const dotSuffix = item.hasDot ? (item.hasSpaceBeforeDot ? ' .' : '.') : '';
+                const answerColorClass = item.article === 'an' ? 'ans-an' : 'ans-a';
+
+                const rowEl = document.createElement('div');
+                rowEl.id = `sentence-row-${item.id}`;
+                rowEl.className = 'sentence-row py-1.5 px-1.5 sm:px-2 flex items-center justify-between gap-1 cursor-pointer select-none whitespace-nowrap overflow-hidden';
+
+                rowEl.innerHTML = `
+                    <div class="flex items-center flex-nowrap whitespace-nowrap worksheet-font text-[20px] sm:text-[24px] md:text-[26px] font-bold text-slate-900 leading-tight">
+                        <!-- Red Arrow matching worksheet -->
+                        <span class="inline-flex items-center mr-1.5 text-[#d32f2f] shrink-0" onclick="handleRowClick(event, ${item.id}, 'full')">
+                            <svg width="22" height="18" viewBox="0 0 24 20" fill="none">
+                                <path d="M2 7H13V2L23 10L13 18V13H2V7Z" fill="#d81b3a"/>
+                            </svg>
+                        </span>
+
+                        <!-- "It is" whole phrase box -->
+                        <span id="phrase-itis-${item.id}" class="target-word-box shrink-0" onclick="handleRowClick(event, ${item.id}, 'full')">It is</span>
+
+                        <!-- Dotted Blank with Placed Answer (a / an) -->
+                        <span id="blank-slot-${item.id}" class="blank-slot show-answer mx-0.5 shrink-0" onclick="handleBlankClick(event, ${item.id})" title="اضغط لسماع (${item.article} ${item.word})">
+                            <span class="article-answer ${answerColorClass} text-[22px] sm:text-[26px]">${item.article}</span>
+                            <span class="dots-text text-slate-400 tracking-tighter">${item.dots}</span>
+                        </span>
+
+                        <!-- Target Noun (First letter purple, rest black, rendered as ONE whole word so finger never moves on letters) -->
+                        <span id="target-word-${item.id}" class="target-word-box shrink-0" onclick="handleWordOnlyClick(event, ${item.id})" title="اضغط لقراءة الكلمة (${item.word})">
+                            <span class="text-[#5e2b87] font-black">${firstLetter}</span><span>${restOfWord}</span>
+                        </span><span class="shrink-0">${dotSuffix}</span>
+                    </div>
+
+                    <!-- Speaker Icon for quick audio trigger -->
+                    <button onclick="handleRowClick(event, ${item.id}, 'default')" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-600 flex items-center justify-center text-xs transition shrink-0 ml-1" title="استمع للنطق الإنجليزي">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                `;
+
+                if (item.col === 'left') {
+                    leftCol.appendChild(rowEl);
+                } else {
+                    rightCol.appendChild(rowEl);
+                }
+            });
+        }
+
+        // ==================== STEADY POINTING FINGER POSITIONING ====================
+        /**
+         * Places the pointing finger steadily right underneath the target whole word element
+         * WITHOUT moving across letters.
+         */
+        function placeFingerUnderElement(el) {
+            const finger = document.getElementById('reading-finger');
+            if (!el || !finger) return;
+
+            currentFingerTargetEl = el;
+            const rect = el.getBoundingClientRect();
+            const targetX = rect.left + (rect.width / 2);
+            const targetY = rect.bottom - 4;
+
+            finger.style.left = `${targetX}px`;
+            finger.style.top = `${targetY}px`;
+            finger.classList.add('visible', 'reading-active');
+        }
+
+        function clearActiveHighlights() {
+            document.querySelectorAll('.target-word-box, .blank-slot').forEach(el => el.classList.remove('word-active'));
+        }
+
+        function clearStepTimers() {
+            stepTimers.forEach(t => clearTimeout(t));
+            stepTimers = [];
+        }
+
+        // Keep finger aligned on scroll or window resize
+        window.addEventListener('scroll', () => {
+            if (currentFingerTargetEl) placeFingerUnderElement(currentFingerTargetEl);
+        }, { passive: true });
+        window.addEventListener('resize', () => {
+            if (currentFingerTargetEl) placeFingerUnderElement(currentFingerTargetEl);
+        });
+
+        // ==================== EDUCATIONAL NATURAL VOICE ENGINE ====================
+        let preferredEnglishVoice = null;
+        let availableEnglishVoices = [];
+
+        /**
+         * Scores and ranks English TTS voices to select the clearest, most natural
+         * educational teacher voice available on the user's device.
+         */
+        function scoreVoiceQuality(v) {
+            let score = 0;
+            const name = v.name.toLowerCase();
+            const lang = v.lang.toLowerCase();
+
+            if (!lang.startsWith('en')) return -999;
+
+            // Prefer clear American or British standard English accents for EFL teaching
+            if (lang === 'en-us' || lang === 'en_us') score += 35;
+            else if (lang === 'en-gb' || lang === 'en_gb') score += 30;
+            else score += 15;
+
+            // Prioritize Neural / Online Natural / Premium Teacher Voices
+            if (name.includes('natural')) score += 60;
+            if (name.includes('online')) score += 40;
+            if (name.includes('neural')) score += 50;
+            if (name.includes('premium') || name.includes('enhanced')) score += 45;
+
+            // Top-tier educational voices across Windows, macOS, iOS, Android, Chrome
+            const topTeacherVoices = [
+                'ava', 'aria', 'jenny', 'ana', 'sonia', 'libby', 'ryan', 'guy',
+                'google us english', 'google uk english female', 'samantha',
+                'allison', 'karen', 'daniel', 'moira', 'serena', 'zira'
+            ];
+            for (let i = 0; i < topTeacherVoices.length; i++) {
+                if (name.includes(topTeacherVoices[i])) {
+                    score += (35 - i);
+                    break;
+                }
+            }
+
+            // Avoid novelty or robotic compact voices
+            if (name.includes('compact') || name.includes('espeak')) score -= 50;
+
+            return score;
+        }
+
+        function loadPreferredEnglishVoice() {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices.length) return;
+
+            availableEnglishVoices = voices
+                .filter(v => v.lang && v.lang.toLowerCase().startsWith('en'))
+                .sort((a, b) => scoreVoiceQuality(b) - scoreVoiceQuality(a));
+
+            if (availableEnglishVoices.length > 0) {
+                preferredEnglishVoice = availableEnglishVoices[0];
+            }
+
+            // Populate the teacher voice selector dropdown
+            const selectEl = document.getElementById('voice-select');
+            if (selectEl && availableEnglishVoices.length > 0) {
+                const currentVal = selectEl.value;
+                selectEl.innerHTML = '';
+
+                availableEnglishVoices.slice(0, 12).forEach((v, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = v.name;
+                    const cleanLabel = v.name
+                        .replace(/Microsoft |Google |Apple /g, '')
+                        .replace(/Online \(Natural\) - /g, '🌟 ')
+                        .replace(/English /g, '');
+                    opt.textContent = idx === 0 ? `🌟 ${cleanLabel} (أفضل صوت تعليمي)` : `🎙️ ${cleanLabel}`;
+                    selectEl.appendChild(opt);
+                });
+
+                if (currentVal && currentVal !== 'auto' && availableEnglishVoices.some(v => v.name === currentVal)) {
+                    selectEl.value = currentVal;
+                    preferredEnglishVoice = availableEnglishVoices.find(v => v.name === currentVal);
+                } else if (preferredEnglishVoice) {
+                    selectEl.value = preferredEnglishVoice.name;
+                }
+            }
+        }
+
+        function handleVoiceChange(voiceName) {
+            const found = availableEnglishVoices.find(v => v.name === voiceName);
+            if (found) {
+                preferredEnglishVoice = found;
+                // Preview the selected voice on the currently active row or item 1
+                readItem(activeRowId || 1, readFullSentence ? 'full' : 'word-only');
+            }
+        }
+
+        if ('speechSynthesis' in window) {
+            loadPreferredEnglishVoice();
+            window.speechSynthesis.onvoiceschanged = loadPreferredEnglishVoice;
+        }
+
+        /**
+         * Highlights a whole word/phrase element and places the steady finger underneath it.
+         */
+        function highlightAndPoint(targetEl) {
+            clearActiveHighlights();
+            if (targetEl) {
+                targetEl.classList.add('word-active');
+                placeFingerUnderElement(targetEl);
+            }
+        }
+
+        /**
+         * Speaks a single English word or natural sentence while keeping the highlight
+         * and pointing finger 100% STATIC (fixed in place without jumping between words).
+         */
+        function speakEducationalFlow(item, mode, onEndCallback) {
+            clearStepTimers();
+
+            const blankEl = document.getElementById(`blank-slot-${item.id}`);
+            const wordEl = document.getElementById(`target-word-${item.id}`);
+            const rate = speechRates[currentSpeedIdx].value;
+
+            // Keep the highlight and finger completely static on the target element
+            const staticTargetEl = (mode === 'article-and-word') ? blankEl : wordEl;
+            highlightAndPoint(staticTargetEl);
+
+            let spokenText = `${item.article} ${item.word}`;
+            if (mode === 'word-only') {
+                spokenText = item.word;
+            } else if (mode === 'full') {
+                spokenText = `It is ${item.article} ${item.word}.`;
+            }
+
+            if (!('speechSynthesis' in window)) {
+                stepTimers.push(setTimeout(() => { if (onEndCallback) onEndCallback(); }, 1000));
+                return;
+            }
+
+            const utter = new SpeechSynthesisUtterance(spokenText);
+            utter.lang = preferredEnglishVoice ? preferredEnglishVoice.lang : 'en-US';
+            if (preferredEnglishVoice) utter.voice = preferredEnglishVoice;
+            utter.rate = rate;
+            utter.pitch = 1.04;
+
+            utter.onend = () => {
+                if (onEndCallback) onEndCallback();
+            };
+            utter.onerror = () => {
+                if (onEndCallback) onEndCallback();
+            };
+
+            window.speechSynthesis.speak(utter);
+        }
+
+        // ==================== INTERACTION HANDLERS ====================
+        function handleWordOnlyClick(event, itemId) {
+            event.stopPropagation();
+            if (isAutoPlaying) stopAutoPlay();
+            readItem(itemId, 'word-only');
+        }
+
+        function handleBlankClick(event, itemId) {
+            event.stopPropagation();
+            if (isAutoPlaying) stopAutoPlay();
+            const blankEl = document.getElementById(`blank-slot-${itemId}`);
+            if (blankEl) {
+                blankEl.classList.add('show-answer');
+            }
+            readItem(itemId, 'article-and-word');
+        }
+
+        function handleRowClick(event, itemId, mode) {
+            event.stopPropagation();
+            if (isAutoPlaying) stopAutoPlay();
+            const effectiveMode = mode === 'default'
+                ? (readFullSentence ? 'full' : 'word-only')
+                : mode;
+            readItem(itemId, effectiveMode);
+        }
+
+        /**
+         * Reads an item in English only, placing the steady finger under each whole word
+         * without ever moving across letters.
+         */
+        function readItem(itemId, mode, onComplete) {
+            const item = WORKSHEET_ITEMS.find(x => x.id === itemId);
+            if (!item) return;
+
+            clearStepTimers();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            activeRowId = itemId;
+            document.querySelectorAll('.sentence-row').forEach(el => el.classList.remove('active-reading'));
+            const rowEl = document.getElementById(`sentence-row-${itemId}`);
+            if (rowEl) rowEl.classList.add('active-reading');
+
+            const runSinglePass = (donePass) => {
+                speakEducationalFlow(item, mode, donePass);
+            };
+
+            runSinglePass(() => {
+                if (repeatTwice && activeRowId === itemId) {
+                    stepTimers.push(setTimeout(() => {
+                        if (activeRowId !== itemId) return;
+                        runSinglePass(() => {
+                            if (onComplete) onComplete();
+                        });
+                    }, 400));
+                } else {
+                    if (onComplete) onComplete();
+                }
+            });
+        }
+
+        // ==================== SEQUENTIAL AUTO-PLAY (1 TO 22) ====================
+        function toggleAutoPlay() {
+            if (isAutoPlaying) {
+                stopAutoPlay();
+            } else {
+                startAutoPlay();
+            }
+        }
+
+        function startAutoPlay() {
+            isAutoPlaying = true;
+            updateAutoPlayButtonUI();
+
+            let currentIndex = 0;
+
+            function playNext() {
+                if (!isAutoPlaying || currentIndex >= WORKSHEET_ITEMS.length) {
+                    stopAutoPlay();
+                    return;
+                }
+
+                const item = WORKSHEET_ITEMS[currentIndex];
+                const rowEl = document.getElementById(`sentence-row-${item.id}`);
+                if (rowEl) {
+                    rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
+                setTimeout(() => {
+                    if (!isAutoPlaying) return;
+                    const mode = readFullSentence ? 'full' : 'word-only';
+                    readItem(item.id, mode, () => {
+                        if (!isAutoPlaying) return;
+                        currentIndex++;
+                        autoPlayTimeout = setTimeout(playNext, 550);
+                    });
+                }, 150);
+            }
+
+            playNext();
+        }
+
+        function stopAutoPlay() {
+            isAutoPlaying = false;
+            clearStepTimers();
+            if (autoPlayTimeout) {
+                clearTimeout(autoPlayTimeout);
+                autoPlayTimeout = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            updateAutoPlayButtonUI();
+        }
+
+        function updateAutoPlayButtonUI() {
+            const btn = document.getElementById('btn-auto-play');
+            const icon = document.getElementById('icon-auto-play');
+            const text = document.getElementById('text-auto-play');
+
+            if (isAutoPlaying) {
+                icon.className = 'fa-solid fa-stop';
+                text.textContent = 'إيقاف القراءة الآلية';
+            } else {
+                icon.className = 'fa-solid fa-play';
+                text.textContent = 'قراءة الكل بالترتيب';
+            }
+        }
+
+        // ==================== TOOLBAR CONTROLS ====================
+        function toggleReadScope() {
+            readFullSentence = !readFullSentence;
+            const label = document.getElementById('read-mode-label');
+            label.textContent = readFullSentence ? 'القراءة: الجملة كاملة' : 'القراءة: الكلمة فقط';
+        }
+
+        function toggleShowAllAnswers() {
+            showAllAnswers = !showAllAnswers;
+            const container = document.getElementById('poster-container');
+            const btn = document.getElementById('btn-answers');
+            const label = document.getElementById('answers-label');
+            container.classList.toggle('show-all-answers', showAllAnswers);
+            document.querySelectorAll('.blank-slot').forEach(el => {
+                el.classList.toggle('show-answer', showAllAnswers);
+            });
+            if (showAllAnswers) {
+                label.textContent = 'الإجابات معروضة (a / an)';
+                btn.className = 'flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-700 border border-rose-600 shadow-sm transition text-xs sm:text-sm';
+            } else {
+                label.textContent = 'إظهار الحل (a / an)';
+                btn.className = 'flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-rose-800 bg-rose-100 hover:bg-rose-200 border border-rose-200 transition text-xs sm:text-sm';
+            }
+        }
+
+        function cycleSpeechSpeed() {
+            currentSpeedIdx = (currentSpeedIdx + 1) % speechRates.length;
+            document.getElementById('speed-label').textContent = speechRates[currentSpeedIdx].label;
+        }
+
+        function toggleRepeatWord() {
+            repeatTwice = !repeatTwice;
+            const label = document.getElementById('repeat-label');
+            label.textContent = repeatTwice ? 'النطق: مرتان للحفظ' : 'النطق: مرة واحدة';
+        }
+
+        // ==================== EXACT HEADER IMAGE EXTRACTOR ====================
+        /**
+         * If `image_86ac58.jpg` is available in the environment, crops the top header banner
+         * (with the boy, girl, puzzle pieces, and "a - an" sign) at ultra-crisp resolution.
+         */
+        function tryAutoLoadWorksheetHeader() {
+            const paths = ['image_86ac58.jpg', './image_86ac58.jpg'];
+            paths.forEach(path => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    if (img.naturalWidth > 100) {
+                        const canvas = document.createElement('canvas');
+                        const cropH = Math.round(img.naturalHeight * 0.202);
+                        canvas.width = img.naturalWidth * 2;
+                        canvas.height = cropH * 2;
+                        const ctx = canvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, img.naturalWidth, cropH, 0, 0, canvas.width, canvas.height);
+
+                        const headerBox = document.getElementById('header-illustration-container');
+                        if (headerBox) {
+                            headerBox.innerHTML = `<img src="${canvas.toDataURL('image/png')}" alt="Top Grammar 1 a - an" class="w-full h-auto block" />`;
+                        }
+                    }
+                };
+                img.src = path;
+            });
+        }
+
+        // Initialize on Window Load
+        window.onload = function() {
+            renderWorksheet();
+            tryAutoLoadWorksheetHeader();
+        };
+    </script>
+</body>
+</html>
